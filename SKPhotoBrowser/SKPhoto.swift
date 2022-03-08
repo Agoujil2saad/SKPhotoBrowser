@@ -83,7 +83,7 @@ open class SKPhoto: NSObject, SKPhotoProtocol {
                     return
                 }
 
-                if let data = data, let response = response, let image = UIImage.animatedImage(withAnimatedGIFData: data) {
+                if let data = data, let response = response, let image = self.isAnimatedImage(data) ? UIImage.animatedImage(withAnimatedGIFData: data) : .init(data:data) {
                     if self.shouldCachePhotoURLImage {
                         if SKCache.sharedCache.imageCache is SKRequestResponseCacheable {
                             SKCache.sharedCache.setImageData(data, response: response, request: task?.originalRequest)
@@ -103,6 +103,14 @@ open class SKPhoto: NSObject, SKPhotoProtocol {
 
     open func loadUnderlyingImageComplete() {
         NotificationCenter.default.post(name: Notification.Name(rawValue: SKPHOTO_LOADING_DID_END_NOTIFICATION), object: self)
+    }
+    
+     func isAnimatedImage(_ data:Data ) -> Bool {
+        if let source = CGImageSourceCreateWithData(data as CFData, nil) {
+            let count = CGImageSourceGetCount(source)
+            return count > 1
+        }
+        return false
     }
     
 }
